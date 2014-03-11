@@ -68,7 +68,7 @@ let $sname :=
         $s
 
 let $source := 
-    if ($i eq "json") then
+    if ($i eq "json" or $i eq "iso2709") then
         xdmp:document-get(
             $s, 
             <options xmlns="xdmp:document-get">
@@ -95,6 +95,20 @@ let $source :=
                 }
             return $m
         (: xqilla:parse-json($source) :)
+    else if ($i eq "iso2709") then
+            (: localhost:8281/marcxq/xbin/ml.xqy?s=/home/kefo/Desktop/marklogic/id/id-main/marcxq/sampledata/iso2709/kundera-utf8.mrc&i=iso2709&o= :)
+        (: We need to get this into some parseable form :)
+        (: Let's just try to get the first record :)
+        let $leader := fn:substring($source, 1, 24)
+        let $record-length := xs:int(fn:substring($leader, 1, 5))
+        let $iso2709 := fn:substring($source, 1, $record-length)
+        let $codepoints := fn:string-to-codepoints($iso2709)
+        let $record-seperators := fn:index-of($codepoints, 30)
+        let $directory := fn:subsequence($codepoints, 1, ($record-seperators[1] - 1))
+        (: let $directory := fn:string-to-codepoints(fn:substring($source, 1, 301)) :)
+        let $directory := fn:codepoints-to-string($directory)
+        return fn:string($directory)
+        
     else
         $source//marcxml:record
 
