@@ -66,9 +66,11 @@ declare function marc27092xmljson:marc27092xmljson(
         
         Then, the string needs to be converted to codepoints for a couple of 
         reasons.  One: the moment a non-standard character is encountered 
-        by the XQuery parser, it may raise an error.  Two: we need to account 
-        for multi-byte characters which are represented as a single codepoint, 
-        or character in the string.
+        by the XQuery parser, it may raise an error.  Working with the codepoints
+        protects us from ourselves.  Two: we need to account for multi-byte 
+        characters which are represented as a single codepoint, or character in 
+        the string.  Otherwise, the record's directory values for fields will
+        be off.
         
         By iterating over the codepoints, you can detect which are multi-byte
         and pad as appropriate.
