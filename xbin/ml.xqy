@@ -1,4 +1,4 @@
-xquery version "1.0";
+xquery version "1.0-ml";
 
 (:
 :   Module Name: MARC/XML BIB 2 BIBFRAME RDF using MarkLogic
@@ -33,6 +33,7 @@ xquery version "1.0";
 
 import module namespace marcxml2marcjson = "http://3windmills.com/marcxq/modules/marcxml2marcjson#" at "../modules/module.MARCXML-2-MARCJSON.xqy";
 import module namespace marcjson2marcxml = "http://3windmills.com/marcxq/modules/marcjson2marcxml#" at "../modules/module.MARCJSON-2-MARCXML.xqy";
+import module namespace marc27092xmljson = "http://3windmills.com/marcxq/modules/marc27092xmljson#" at "../modules/module.ISO2709-2-MARC.xqy";
 
 import module namespace xqilla = "http://xqilla.sourceforge.net/Functions" at "../modules/module.JSON-2-SnelsonXML.xqy";
 
@@ -96,24 +97,15 @@ let $source :=
             return $m
         (: xqilla:parse-json($source) :)
     else if ($i eq "iso2709") then
-            (: localhost:8281/marcxq/xbin/ml.xqy?s=/home/kefo/Desktop/marklogic/id/id-main/marcxq/sampledata/iso2709/kundera-utf8.mrc&i=iso2709&o= :)
-        (: We need to get this into some parseable form :)
-        (: Let's just try to get the first record :)
-        let $leader := fn:substring($source, 1, 24)
-        let $record-length := xs:int(fn:substring($leader, 1, 5))
-        let $iso2709 := fn:substring($source, 1, $record-length)
-        let $codepoints := fn:string-to-codepoints($iso2709)
-        let $record-seperators := fn:index-of($codepoints, 30)
-        let $directory := fn:subsequence($codepoints, 1, ($record-seperators[1] - 1))
-        (: let $directory := fn:string-to-codepoints(fn:substring($source, 1, 301)) :)
-        let $directory := fn:codepoints-to-string($directory)
-        return fn:string($directory)
+        $source
         
     else
         $source//marcxml:record
 
 let $output := 
-    if ($o eq "json") then
+    if ($i eq "iso2709") then
+        marc27092xmljson:marc27092xmljson($source, $o)
+    else if ($o eq "json") then
         if (count($source) eq 1) then
             marcxml2marcjson:marcxml2marcjson($source)
         else
@@ -138,34 +130,16 @@ let $output :=
         $source
 
 return $output
-
 (:
-let $graphs-count := fn:count($output//*:graph)
-let $triples-count := fn:count($output//*:triple)
 return 
     element debug {
         element input {
-            attribute type {$i},
-            attribute graphs {fn:count($source-trix//*:graph)},
-            attribute triples {fn:count($source-trix//*:triple)}
+            attribute type {$i}
         },
         element output {
             attribute type {$o},
-            attribute graphs {fn:count($output//*:graph)},
-            attribute triples {fn:count($output//*:triple)}
+            attribute records {fn:count($output//marcxml:record)}
         },
-        
-        (:
-        for $g in $output/*:graph
-        let $guri := $g/*:uri[1]
-        let $triples-c := fn:count($g/*:triple)
-        return
-            element debug-graph {
-                attribute uri {$guri},
-                attribute triples {$triples-c}
-            },
-        :)
-        
         element output-data {
             $output
         }
