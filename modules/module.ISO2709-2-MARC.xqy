@@ -58,6 +58,21 @@ declare function marc27092xmljson:marc27092xmljson(
     $output as xs:string
     )
 {
+    (:
+        The utf8 string - the input iso2709 - needs to be normalized using 
+        "canonical decomposition," which "decomposes" all the characters that
+        are normally precomposed.  See, e.g.:
+        http://www.unicode.org/reports/tr15/
+        
+        Then, the string needs to be converted to codepoints for a couple of 
+        reasons.  One: the moment a non-standard character is encountered 
+        by the XQuery parser, it may raise an error.  Two: we need to account 
+        for multi-byte characters which are represented as a single codepoint, 
+        or character in the string.
+        
+        By iterating over the codepoints, you can detect which are multi-byte
+        and pad as appropriate.
+    :)
     let $codepoints := fn:string-to-codepoints(fn:normalize-unicode($iso2709, "NFD"))
     let $codepoints := 
         for $a at $pos in $codepoints
