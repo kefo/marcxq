@@ -31,6 +31,7 @@ module namespace    marcjson2marcxml    =   "http://3windmills.com/marcxq/module
 
 declare namespace   marcxml             =   "http://www.loc.gov/MARC21/slim";
 declare namespace   map                 =   "http://marklogic.com/xdmp/map";
+declare namespace   snelson             =   "http://john.snelson.org.uk/parsing-json-into-xquery";
 
 (:~
 :   This is the main function.  Input RDF/XML, output ntiples.
@@ -47,7 +48,7 @@ declare function marcjson2marcxml:marcjson2marcxml(
     if ($engine eq "marklogic") then
         marcjson2marcxml:marklogic($jsonxml)
     else
-        element marcxml:record { $jsonxml }
+        marcjson2marcxml:snelson($jsonxml)
 };
 
 
@@ -89,6 +90,55 @@ declare function marcjson2marcxml:marklogic(
                 attribute {"ind2"} { $ind2 },
                 $subfields
             }
+    return
+        element marcxml:record {
+            $leader,
+            $controlfields,
+            $datafields
+        }
+};
+
+
+(:~
+:   This is the main function.  Input RDF/XML, output ntiples.
+:   All other functions are local.
+:
+:   @param  $rdfxml        node() is the RDF/XML  
+:   @return ntripes as xs:string
+:)
+declare function marcjson2marcxml:snelson(
+    $jsonxml as element()
+    ) as element(marcxml:record) {
+        
+    let $leader := element marcxml:leader { $jsonxml/snelson:item/snelson:pair[@name="leader"][1] }
+    let $controlfields := 
+        for $e in $jsonxml/snelson:item/snelson:pair[@name="fields"]/snelson:item/snelson:pair[fn:starts-with(xs:string(@name), "00")]
+        return 
+            element marcxml:controlfield {
+                attribute {"tag"} { $e/@name },
+                xs:string($e)
+            }
+    let $datafields := ()
+        (:
+        for $e in $jsonxml/snelson:item/snelson:pair[@name = "fields"]/snelson:item/snelson:pair[fn:not(fn:starts-with(@name, "00"))]
+        let $tag := xs:string($e/@name)
+        let $ind1 := xs:string($e/snelson:pair[@name = "ind1"])
+        let $ind2 := xs:string($e/snelson:pair[@name = "ind2"])
+        let $subfields := 
+            for $sf in $e/snelson:pair[@name = "subfields"]/snelson:item/snelson:item/snelson:pair
+            return 
+                element marcxml:subfield { 
+                    attribute {"code"} {xs:string($sf/@name)},
+                    xs:string($sf) 
+                }
+        return 
+            element marcxml:datafield {
+                attribute {"tag"} { $tag },
+                attribute {"ind1"} { $ind1 },
+                attribute {"ind2"} { $ind2 },
+                $subfields
+            }
+        :)
     return
         element marcxml:record {
             $leader,

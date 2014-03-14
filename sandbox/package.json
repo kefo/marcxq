@@ -1,0 +1,11 @@
+{
+  "name": "marcxq",
+  "description": "MARC XQ - Zorba testing",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "express": "3.x",
+    "zorba": "0.1.x"
+  }
+}
+
