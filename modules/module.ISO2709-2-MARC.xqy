@@ -124,7 +124,7 @@ declare function marc27092xmljson:marc27092xmljson(
         let $dentries-count := fn:string-length($directory) div 12
         let $dentries := 
             element directory-entries {
-                for $x in (1 to $dentries-count)
+                for $x in (1 to xs:int(fn:ceiling($dentries-count)))
                 let $pos := 
                     if ($x eq 1) then
                         13
