@@ -3,6 +3,8 @@
 
 # Ignore 
 # sampledata/
+
 node_modules/
+zorba-node/
 
 
