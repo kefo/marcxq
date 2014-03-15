@@ -40,22 +40,54 @@ server.use(function (req, res){
   
   fs.readFile("../xbin/zorba.xqy", {encoding: 'utf8'}, function(err, data) {
         //declare variable $marcxmluri as xs:string external;
-        query = data.replace(/at "..\//g, 'at "/home/kefo/Desktop/marklogic/id/id-main/marcxq/');
+        
+        //query = data.replace(/at "..\//g, 'at "/home/kefo/Desktop/marklogic/id/id-main/marcxq/');
+        query = data.replace(/at "..\//g, 'at "/home/kefo/Desktop/Kevin/Active/marklogic/id/id-main/marcxq/');
         query = query.replace('$s as xs:string external;', '$s := "' + req.query.s + '";');
         query = query.replace('$i as xs:string external;', '$i := "' + req.query.i + '";');
         query = query.replace('$o as xs:string external;', '$o := "' + req.query.o + '";');
   
-        var r = zorba.execute(query);
-        //console.log(r);
-  
-        //res.set('Content-Type','application/rdf+xml');
-        if (req.query.o == "json") {
-            r = r.replace('<?xml version="1.0" encoding="UTF-8"?>' + "\n", "")
+        /*
+        zorba.execute(query, function(err, data) {
+            if (req.query.o == "json") {
+                data = data.replace('<?xml version="1.0" encoding="UTF-8"?>' + "\n", "")
+                res.header("Content-Type", "text/plain");
+            } else {
+                res.header("Content-Type", "application/xml");
+            }
+            res.end(data);
+        });
+        */
+        try {
+            var r = zorba.execute(query);
+            if (req.query.o == "json") {
+                r = r.replace('<?xml version="1.0" encoding="UTF-8"?>' + "\n", "")
+                res.header("Content-Type", "text/plain");
+            } else {
+                res.header("Content-Type", "application/xml");
+            }
+            res.end(r);
+        } catch (e) {
+            var metadata = formatJson(e)
+            var stack = e.stack.trim()
+            var msg = stack + '\n Metadata:\n' + metadata
+
+            var msg = JSON.stringify(e, ['stack', 'message'], 2)
+            
+            var err = JSON.parse(e["message"]);
+            errout = "Error! \n";
+            errout += "    " + err["error"] + "\n";
+            //errout += "        type: " + err["type"] + "\n";
+            if (err["file"] == "") {
+                errout += "        file: zorba.xqy\n";
+            } else {
+                errout += "        file: " + err["file"] + "\n";
+            }
+            errout += "        line(s): " + err["lines"] + "\n";
+            errout += "        character(s): " + err["characters"] + "\n";
             res.header("Content-Type", "text/plain");
-        } else {
-            res.header("Content-Type", "application/xml");
+            res.end(errout);
         }
-        res.end(r);
     });
   
 });
