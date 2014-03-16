@@ -110,26 +110,25 @@ declare function marcjson2marcxml:snelson(
     $jsonxml as element()
     ) as element(marcxml:record) {
         
-    let $leader := element marcxml:leader { $jsonxml/snelson:item/snelson:pair[@name="leader"][1] }
+    let $leader := element marcxml:leader { $jsonxml/snelson:pair[@name="leader"][1]/text() }
     let $controlfields := 
-        for $e in $jsonxml/snelson:item/snelson:pair[@name="fields"]/snelson:item/snelson:pair[fn:starts-with(xs:string(@name), "00")]
+        for $e in $jsonxml/snelson:pair[@name="fields"]/snelson:item/snelson:pair[fn:starts-with(xs:string(@name), "00")]
         return 
             element marcxml:controlfield {
                 attribute {"tag"} { $e/@name },
-                xs:string($e)
+                $e/text()
             }
-    let $datafields := ()
-        (:
-        for $e in $jsonxml/snelson:item/snelson:pair[@name = "fields"]/snelson:item/snelson:pair[fn:not(fn:starts-with(@name, "00"))]
+    let $datafields :=
+        for $e in $jsonxml/snelson:pair[@name = "fields"]/snelson:item/snelson:pair[fn:not(fn:starts-with(@name, "00"))]
         let $tag := xs:string($e/@name)
-        let $ind1 := xs:string($e/snelson:pair[@name = "ind1"])
-        let $ind2 := xs:string($e/snelson:pair[@name = "ind2"])
+        let $ind1 := $e/snelson:pair[@name = "ind1"]/text()
+        let $ind2 := $e/snelson:pair[@name = "ind2"]/text()
         let $subfields := 
             for $sf in $e/snelson:pair[@name = "subfields"]/snelson:item/snelson:item/snelson:pair
             return 
                 element marcxml:subfield { 
                     attribute {"code"} {xs:string($sf/@name)},
-                    xs:string($sf) 
+                    $sf/text()
                 }
         return 
             element marcxml:datafield {
@@ -138,7 +137,6 @@ declare function marcjson2marcxml:snelson(
                 attribute {"ind2"} { $ind2 },
                 $subfields
             }
-        :)
     return
         element marcxml:record {
             $leader,

@@ -94,12 +94,12 @@ let $output :=
                 return marcxml2marcjson:marcxml2marcjson($r)
             return fn:concat('[ ', fn:string-join($objects, ", "), ']')
     else if ($o eq "xml") then
-        if (count($source) eq 1) then
+        if (count($source/*:item) eq 1) then
             marcjson2marcxml:marcjson2marcxml($source, "snelson")
         else
             let $records := 
-                for $r in $source
-                return marcjson2marcxml:marcjson2marcxml($source, "snelson")
+                for $r in $source/*:item
+                return marcjson2marcxml:marcjson2marcxml($r, "snelson")
             return
                 element marcxml:collection {
                     $records
