@@ -54,7 +54,7 @@ declare function marcxml2marcjson:marcxml2marcjson(
             for $sf in $f/marcxml:subfield
             return fn:concat('{ "', xs:string($sf/@code), '": "', marcxml2marcjson:clean_string(xs:string($sf)), '" }')
         let $subfields := fn:concat('[ ', fn:string-join($subfields, ", "), ' ]')
-        return fn:concat('{ "', $tag, '": { "ind1": "', $ind1, '", "ind2": "', $ind2, '", "subfields": [ ', $subfields, '] } }')
+        return fn:concat('{ "', $tag, '": { "ind1": "', $ind1, '", "ind2": "', $ind2, '", "subfields": ', $subfields, ' } }')
     
     let $fields := ($controlfields,$datafields)
     let $fields := fn:concat('"fields": [ ', fn:string-join($fields, ", "), ' ]')
