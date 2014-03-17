@@ -34,10 +34,30 @@ declare namespace   marcxml         = "http://www.loc.gov/MARC21/slim";
 :   This is the main function.  Input RDF/XML, output ntiples.
 :   All other functions are local.
 :
-:   @param  $rdfxml        node() is the RDF/XML  
-:   @return ntripes as xs:string
+:   @param  $marcxml        element(marcxml:record)*
+:   @return xs:string
 :)
 declare function marcxml2marcjson:marcxml2marcjson(
+    $marcxml as element(marcxml:record)*
+    ) as xs:string {
+    
+    if (count($marcxml) eq 1) then
+            marcxml2marcjson:record($marcxml)
+    else
+        let $objects := 
+            for $r in $marcxml
+            return marcxml2marcjson:marcxml2marcjson($r)
+        return fn:concat('[ ', fn:string-join($objects, ", "), ']')
+
+};
+        
+(:~
+:   Transform a single marcxml:record to MARC/JSON.
+:
+:   @param  $marcxml as element(marcxml:record)
+:   @return xs:string
+:)
+declare function marcxml2marcjson:record(
     $marcxml as element(marcxml:record)
     ) as xs:string {
     
