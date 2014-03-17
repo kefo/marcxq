@@ -230,7 +230,7 @@ declare function marc27092xmljson:marc27092xmljson(
                     return
                         if ($output eq "json") then
                             let $subfields := fn:concat('[ ', fn:string-join($subfields, ", "), ' ]')
-                            return fn:concat('{ "', $t, '": { "ind1": "', $ind1, '", "ind2": "', $ind2, '", "subfields": [ ', $subfields, '] } }')
+                            return fn:concat('{ "', $t, '": { "ind1": "', $ind1, '", "ind2": "', $ind2, '", "subfields": ', $subfields, ' } }')
                         else
                             element datafield {
                                 attribute tag {$t},
