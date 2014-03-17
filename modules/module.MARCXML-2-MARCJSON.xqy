@@ -43,7 +43,7 @@ declare function marcxml2marcjson:marcxml2marcjson(
 {
     let $records := $marcxml//marcxml:record
     return
-        if (count($records) eq 1) then
+        if (fn:count($records) eq 1) then
             marcxml2marcjson:record($records)
         else
             let $objects := 
