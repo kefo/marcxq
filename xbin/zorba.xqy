@@ -39,16 +39,13 @@ import module namespace jx              =   "http://zorba.io/modules/json-xml";
 import schema namespace parseoptions    =   "http://zorba.io/modules/xml-options";
 
 import module namespace marcxml2marcjson = "http://3windmills.com/marcxq/modules/marcxml2marcjson#" at "../modules/module.MARCXML-2-MARCJSON.xqy";
-import module namespace marcjson2marcxml = "http://3windmills.com/marcxq/modules/marcjson2marcxml#" at "../modules/module.MARCJSON-2-MARCXML.xqy";
+import module namespace marcjson2marcxml-zorba = "http://3windmills.com/marcxq/modules/marcjson2marcxml-zorba#" at "../modules/module.MARCJSON-2-MARCXML-zorba.xqy";
 import module namespace marc27092xmljson = "http://3windmills.com/marcxq/modules/marc27092xmljson#" at "../modules/module.ISO2709-2-MARC.xqy";
 
 (: import module namespace xqilla = "http://xqilla.sourceforge.net/Functions" at "../modules/module.JSON-2-SnelsonXML.xqy"; :)
 
 (: NAMESPACES :)
 declare namespace marcxml       = "http://www.loc.gov/MARC21/slim";
-
-declare namespace an = "http://www.zorba-xquery.com/annotations";
-declare namespace httpexpath = "http://expath.org/ns/http-client";
 
 (:~
 :   This variable is for the location of the source MARC.
@@ -77,14 +74,16 @@ let $source :=
         let $marcxml := parsexml:parse($source, <parseoptions:options/>)/element()
         return $marcxml//marcxml:record
     else if ($i eq "json") then
-        let $json := jn:parse-json($source)
-        return jx:json-to-xml($json)
+        jn:parse-json($source)
     else
         $source
 
 let $output := 
+    (: In: XML; Out: XML or JSON :)
     if ($i eq "iso2709") then
         marc27092xmljson:marc27092xmljson($source, $o)
+        
+    (: In: XML; Out: json :)
     else if ($o eq "json") then
         if (count($source) eq 1) then
             marcxml2marcjson:marcxml2marcjson($source)
@@ -93,19 +92,14 @@ let $output :=
                 for $r in $source
                 return marcxml2marcjson:marcxml2marcjson($r)
             return fn:concat('[ ', fn:string-join($objects, ", "), ']')
+    
+    (: In: JSON; Out: xml :)        
     else if ($o eq "xml") then
-        if (count($source/*:item) eq 1) then
-            marcjson2marcxml:marcjson2marcxml($source, "snelson")
-        else
-            let $records := 
-                for $r in $source/*:item
-                return marcjson2marcxml:marcjson2marcxml($r, "snelson")
-            return
-                element marcxml:collection {
-                    $records
-                }
+        marcjson2marcxml-zorba:marcjson2marcxml($source)
+        
     else if ($o eq "snelson") then
         $source
+    
     else
         $source
 
