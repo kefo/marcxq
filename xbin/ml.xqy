@@ -32,11 +32,8 @@ xquery version "1.0-ml";
 (: IMPORTED MODULES :)
 
 import module namespace marcxml2marcjson = "http://3windmills.com/marcxq/modules/marcxml2marcjson#" at "../modules/module.MARCXML-2-MARCJSON.xqy";
-import module namespace marcjson2marcxml = "http://3windmills.com/marcxq/modules/marcjson2marcxml#" at "../modules/module.MARCJSON-2-MARCXML.xqy";
+import module namespace marcjson2marcxml-ml = "http://3windmills.com/marcxq/modules/marcjson2marcxml-ml#" at "../modules/module.MARCJSON-2-MARCXML-marklogic.xqy";
 import module namespace marc27092xmljson = "http://3windmills.com/marcxq/modules/marc27092xmljson#" at "../modules/module.ISO2709-2-MARC.xqy";
-
-import module namespace xqilla = "http://xqilla.sourceforge.net/Functions" at "../modules/module.JSON-2-SnelsonXML.xqy";
-
 
 (: NAMESPACES :)
 declare namespace xdmp  = "http://marklogic.com/xdmp";
@@ -86,25 +83,18 @@ let $source :=
 
 let $source := 
     if ($i eq "json") then
-        let $s := xdmp:from-json($source)
-        return 
-            for $map in $s
-            let $m := 
-                element map:map {
-                    element leader { map:get($map, "leader") },
-                    element fields { map:get($map, "fields") }
-                }
-            return $m
-        (: xqilla:parse-json($source) :)
+        xdmp:from-json($source)
     else if ($i eq "iso2709") then
         $source
-        
     else
         $source//marcxml:record
 
 let $output := 
+    (: In: XML; Out: XML or JSON :)
     if ($i eq "iso2709") then
         marc27092xmljson:marc27092xmljson($source, $o)
+
+    (: In: XML; Out: json :)
     else if ($o eq "json") then
         if (count($source) eq 1) then
             marcxml2marcjson:marcxml2marcjson($source)
@@ -113,19 +103,15 @@ let $output :=
                 for $r in $source
                 return marcxml2marcjson:marcxml2marcjson($r)
             return fn:concat('[ ', fn:string-join($objects, ", "), ']')
+
+    (: In: JSON; Out: xml :)  
     else if ($o eq "xml") then
-        if (count($source) eq 1) then
-            marcjson2marcxml:marcjson2marcxml($source, "marklogic")
-        else
-            let $records := 
-                for $r in $source
-                return marcjson2marcxml:marcjson2marcxml($r, "marklogic")
-            return
-                element marcxml:collection {
-                    $records
-                }
-    else if ($o eq "snelson") then
+        marcjson2marcxml-ml:marcjson2marcxml($source)
+    
+    (: In: JSON or XML; Out: the "source" :)      
+    else if ($o eq "source") then
         $source
+
     else
         $source
 
