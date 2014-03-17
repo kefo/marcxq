@@ -32,6 +32,7 @@ module namespace    marcjson2marcxml    =   "http://3windmills.com/marcxq/module
 declare namespace   marcxml             =   "http://www.loc.gov/MARC21/slim";
 declare namespace   map                 =   "http://marklogic.com/xdmp/map";
 declare namespace   snelson             =   "http://john.snelson.org.uk/parsing-json-into-xquery";
+declare namespace   jn                  =   "http://jsoniq.org/functions";
 
 (:~
 :   This is the main function.  Input RDF/XML, output ntiples.
@@ -41,14 +42,66 @@ declare namespace   snelson             =   "http://john.snelson.org.uk/parsing-
 :   @return ntripes as xs:string
 :)
 declare function marcjson2marcxml:marcjson2marcxml(
-    $jsonxml as element(),
+    $jsonxml,
     $engine as xs:string
     ) as element(marcxml:record) {
     
     if ($engine eq "marklogic") then
         marcjson2marcxml:marklogic($jsonxml)
+    else if ($engine eq "jsoniq") then
+        marcjson2marcxml:jsoniq($jsonxml)
     else
         marcjson2marcxml:snelson($jsonxml)
+};
+
+
+(:~
+:   This is the main function.  Input RDF/XML, output ntiples.
+:   All other functions are local.
+:
+:   @param  $jsonxml
+:   @return ntripes as xs:string
+:)
+declare function marcjson2marcxml:jsoniq(
+    $jsonxml
+    ) as element(marcxml:record) {
+        
+    let $leader := element marcxml:leader { $jsonxml("leader") }
+    let $fields := 
+        for $e in jn:members($jsonxml("fields"))
+            for $k in jn:keys($e)
+            return 
+                if (fn:starts-with($k, "00")) then
+                    element marcxml:controlfield {
+                        attribute {"tag"} { xs:string($k) },
+                        xs:string($e($k))
+                    }
+                else
+                    let $tag := xs:string($k)
+                    let $ind1 := xs:string($e($k)("ind1"))
+                    let $ind2 := xs:string($e($k)("ind1"))
+                    let $subfields := 
+                        for $sf in jn:members($e($k)("subfields"))
+                            for $sfk in jn:keys($sf)
+                            return 
+                                element marcxml:subfield { 
+                                    attribute {"code"} {xs:string($sfk)},
+                                    xs:string($sf($sfk)) 
+                                }
+                    return 
+                        element marcxml:datafield {
+                            attribute {"tag"} { $tag },
+                            attribute {"ind1"} { $ind1 },
+                            attribute {"ind2"} { $ind2 },
+                            $subfields
+                        }
+    return
+        element marcxml:record {
+            $leader,
+            $fields
+        }
+    
+
 };
 
 
