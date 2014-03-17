@@ -68,17 +68,11 @@ server.use(function (req, res){
             }
             res.end(r);
         } catch (e) {
-            var metadata = formatJson(e)
-            var stack = e.stack.trim()
-            var msg = stack + '\n Metadata:\n' + metadata
-
-            var msg = JSON.stringify(e, ['stack', 'message'], 2)
-            
             var err = JSON.parse(e["message"]);
             errout = "Error! \n";
             errout += "    " + err["error"] + "\n";
             //errout += "        type: " + err["type"] + "\n";
-            if (err["file"] == "") {
+            if (err.file === "") {
                 errout += "        file: zorba.xqy\n";
             } else {
                 errout += "        file: " + err["file"] + "\n";
