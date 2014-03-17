@@ -38,17 +38,18 @@ declare namespace   marcxml         = "http://www.loc.gov/MARC21/slim";
 :   @return xs:string
 :)
 declare function marcxml2marcjson:marcxml2marcjson(
-    $marcxml as element(marcxml:record)*
-    ) as xs:string {
-    
-    if (count($marcxml) eq 1) then
-            marcxml2marcjson:record($marcxml)
-    else
-        let $objects := 
-            for $r in $marcxml
-            return marcxml2marcjson:marcxml2marcjson($r)
-        return fn:concat('[ ', fn:string-join($objects, ", "), ']')
-
+    $marcxml as element()
+    ) as xs:string 
+{
+    let $records := $marcxml//marcxml:record
+    return
+        if (count($records) eq 1) then
+            marcxml2marcjson:record($records)
+        else
+            let $objects := 
+                for $r in $records
+                return marcxml2marcjson:record($r)
+            return fn:concat('[ ', fn:string-join($objects, ", "), ']')
 };
         
 (:~
@@ -59,8 +60,8 @@ declare function marcxml2marcjson:marcxml2marcjson(
 :)
 declare function marcxml2marcjson:record(
     $marcxml as element(marcxml:record)
-    ) as xs:string {
-    
+    ) as xs:string 
+{
     let $leader := fn:concat('"leader": "', xs:string($marcxml/marcxml:leader), '"')
     let $controlfields := 
         for $f in $marcxml/marcxml:controlfield
