@@ -87,7 +87,7 @@ let $source :=
     else if ($i eq "iso2709") then
         $source
     else
-        $source//marcxml:record
+        $source/element()
 
 let $output := 
     (: In: XML; Out: XML or JSON :)
@@ -96,13 +96,7 @@ let $output :=
 
     (: In: XML; Out: json :)
     else if ($o eq "json") then
-        if (count($source) eq 1) then
-            marcxml2marcjson:marcxml2marcjson($source)
-        else
-            let $objects := 
-                for $r in $source
-                return marcxml2marcjson:marcxml2marcjson($r)
-            return fn:concat('[ ', fn:string-join($objects, ", "), ']')
+        marcxml2marcjson:marcxml2marcjson($source)
 
     (: In: JSON; Out: xml :)  
     else if ($o eq "xml") then
