@@ -161,7 +161,7 @@ declare function marc27092xmljson:marc27092xmljson(
                     if ($output eq "json") then
                         fn:concat('{ "', xs:string($t), '": "', fn:codepoints-to-string($fieldpoints), '" }')
                     else
-                        element controlfield {
+                        element marcxml:controlfield {
                             attribute tag {$t},
                             fn:codepoints-to-string($fieldpoints)
                         }
@@ -223,7 +223,7 @@ declare function marc27092xmljson:marc27092xmljson(
                             if ($output eq "json") then
                                 fn:concat('{ "', fn:codepoints-to-string($sfpoints[1]), '": "', marc27092xmljson:clean_string(fn:codepoints-to-string(fn:subsequence($sfpoints, 2))), '" }')
                             else
-                                element subfields {
+                                element marcxml:subfields {
                                     attribute code {fn:codepoints-to-string($sfpoints[1])},
                                     fn:codepoints-to-string(fn:subsequence($sfpoints, 2))
                                 }
@@ -232,7 +232,7 @@ declare function marc27092xmljson:marc27092xmljson(
                             let $subfields := fn:concat('[ ', fn:string-join($subfields, ", "), ' ]')
                             return fn:concat('{ "', $t, '": { "ind1": "', $ind1, '", "ind2": "', $ind2, '", "subfields": ', $subfields, ' } }')
                         else
-                            element datafield {
+                            element marcxml:datafield {
                                 attribute tag {$t},
                                 attribute ind1 {$ind1},
                                 attribute ind2 {$ind2},
