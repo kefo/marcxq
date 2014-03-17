@@ -20,7 +20,7 @@ xquery version "1.0";
 :)
    
 (:~
-:   Takes JSON formatted as XML and converts to MARC/XML
+:   Takes JSON formatted as JSONIQ Object and converts to MARC/XML
 :
 :   @author Kevin Ford (kefo@loc.gov)
 :   @since March 16, 2014
@@ -57,9 +57,7 @@ declare function marcjson2marcxml-zorba:marcjson2marcxml(
 
 
 (:~
-:   This is the main function.  Transforms MARC/JSON, passed as Zorba JSON object,
-:   to MARC/XML.  Zorba has a native way of iterating over JSON, without
-:   first formatting it as XML.  JSONIQ.
+:   Transform a single object() representing a MARC Record in JSON to MARC/XML.
 :
 :   @param  $json        object()
 :   @return element(marcxml:record)
