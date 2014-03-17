@@ -71,8 +71,8 @@ let $source :=
 
 let $source := 
     if ($i eq "xml") then
-        let $marcxml := parsexml:parse($source, <parseoptions:options/>)/element()
-        return $marcxml//marcxml:record
+        parsexml:parse($source, <parseoptions:options/>)/element()
+        
     else if ($i eq "json") then
         jn:parse-json($source)
     else
@@ -85,14 +85,8 @@ let $output :=
         
     (: In: XML; Out: json :)
     else if ($o eq "json") then
-        if (count($source) eq 1) then
-            marcxml2marcjson:marcxml2marcjson($source)
-        else
-            let $objects := 
-                for $r in $source
-                return marcxml2marcjson:marcxml2marcjson($r)
-            return fn:concat('[ ', fn:string-join($objects, ", "), ']')
-    
+        marcxml2marcjson:marcxml2marcjson($source)
+
     (: In: JSON; Out: xml :)        
     else if ($o eq "xml") then
         marcjson2marcxml-zorba:marcjson2marcxml($source)
