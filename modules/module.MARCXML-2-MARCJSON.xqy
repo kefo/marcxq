@@ -41,7 +41,11 @@ declare function marcxml2marcjson:marcxml2marcjson(
     $marcxml as element()
     ) as xs:string 
 {
-    let $records := $marcxml//marcxml:record
+    let $records := 
+        if ( fn:local-name($marcxml) eq "record" ) then
+            $marcxml
+        else
+            $marcxml//marcxml:record
     return
         if (fn:count($records) eq 1) then
             marcxml2marcjson:record($records)
