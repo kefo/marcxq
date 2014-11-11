@@ -31,6 +31,7 @@ xquery version "1.0-ml";
 
 (: IMPORTED MODULES :)
 
+import module namespace marcxml2marctxt = "http://3windmills.com/marcxq/modules/marcxml2marctxt#" at "../modules/module.MARCXML-2-MARCTXT.xqy";
 import module namespace marcxml2marcjson = "http://3windmills.com/marcxq/modules/marcxml2marcjson#" at "../modules/module.MARCXML-2-MARCJSON.xqy";
 import module namespace marcjson2marcxml-ml = "http://3windmills.com/marcxq/modules/marcjson2marcxml-ml#" at "../modules/module.MARCJSON-2-MARCXML-marklogic.xqy";
 import module namespace marc27092xmljson = "http://3windmills.com/marcxq/modules/marc27092xmljson#" at "../modules/module.ISO2709-2-MARC.xqy";
@@ -98,6 +99,10 @@ let $output :=
     else if ($o eq "json") then
         marcxml2marcjson:marcxml2marcjson($source)
 
+    (: In: XML; Out: txt :)
+    else if ($o eq "txt") then
+        marcxml2marctxt:marcxml2marctxt($source)
+        
     (: In: JSON; Out: xml :)  
     else if ($o eq "xml") then
         marcjson2marcxml-ml:marcjson2marcxml($source)
